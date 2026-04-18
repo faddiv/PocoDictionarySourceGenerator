@@ -31,7 +31,7 @@ internal class OutputGenerator(SuccessfulCollectedData collectedData) : IDisposa
 
     private void GenerateNamespace()
     {
-        if (false)
+        if (_collectedData.TypeInfo.InGlobalNamespace)
         {
             GenerateNamespaceMembers();
         }
