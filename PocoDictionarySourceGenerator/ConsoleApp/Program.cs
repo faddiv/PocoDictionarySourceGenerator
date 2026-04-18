@@ -10,10 +10,11 @@ namespace ConsoleApp
     {
         static void Main()
         {
-            Console.WriteLine("Types in this assembly:");
-            foreach (Type t in typeof(Program).Assembly.GetTypes())
+            Console.WriteLine("Baz fields:");
+            var foo = new Baz { Foo = 42, Bar = "Hello", Date = new DateTime(2024, 1, 1) };
+            foreach (var kv in foo)
             {
-                Console.WriteLine(t.FullName);
+                Console.WriteLine($"{kv.Key}: {kv.Value}");
             }
         }
     }
@@ -22,5 +23,12 @@ namespace ConsoleApp
     public partial class Foo
     {
         public string Bar { get; set; }
+    }
+
+    public partial class Baz
+    {
+        public int Foo { get; set; }
+        public string Bar { get; set; }
+        public DateTime Date { get; set; }
     }
 }
