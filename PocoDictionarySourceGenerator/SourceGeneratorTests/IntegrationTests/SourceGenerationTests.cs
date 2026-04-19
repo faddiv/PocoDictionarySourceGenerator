@@ -21,7 +21,39 @@ public class SourceGenerationTests(TestEnvironment testEnvironment)
     }
 
     [Fact]
-    public async Task Generate_PocoWithImplementation()
+    public async Task Generate_PocoInNamespace()
+    {
+        var code = testEnvironment.GetValidSource();
+        await VerifyCS.VerifyGeneratorAsync(code,
+            testEnvironment.GetOutputs());
+    }
+    
+    [Fact]
+    public async Task Generate_PocoInGlobalNamespace()
+    {
+        var code = testEnvironment.GetValidSource();
+        await VerifyCS.VerifyGeneratorAsync(code,
+            testEnvironment.GetOutputs());
+    }
+    
+    [Fact]
+    public async Task Generate_PocoForRecord()
+    {
+        var code = testEnvironment.GetValidSource();
+        await VerifyCS.VerifyGeneratorAsync(code,
+            testEnvironment.GetOutputs());
+    }
+
+    [Fact]
+    public async Task Generate_PocoForStruct()
+    {
+        var code = testEnvironment.GetValidSource();
+        await VerifyCS.VerifyGeneratorAsync(code,
+            testEnvironment.GetOutputs());
+    }
+    
+    [Fact]
+    public async Task Generate_PocoForRecordStruct()
     {
         var code = testEnvironment.GetValidSource();
         await VerifyCS.VerifyGeneratorAsync(code,

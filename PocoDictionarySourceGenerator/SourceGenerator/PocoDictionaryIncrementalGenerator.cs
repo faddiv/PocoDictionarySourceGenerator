@@ -30,7 +30,7 @@ public partial class PocoDictionaryIncrementalGenerator : IIncrementalGenerator
 
     private static bool Filter(SyntaxNode s, CancellationToken token)
     {
-        return s is MethodDeclarationSyntax;
+        return s is TypeDeclarationSyntax and not ExtensionBlockDeclarationSyntax;
     }
 
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using Foxy.PocoDictionary;
 
@@ -11,24 +12,21 @@ namespace ConsoleApp
         static void Main()
         {
             Console.WriteLine("Baz fields:");
-            var foo = new Baz { Foo = 42, Bar = "Hello", Date = new DateTime(2024, 1, 1) };
+            var baz = new Baz { Foo = 42, Bar = "Hello", Date = new DateTime(2024, 1, 1) };
+            foreach (var kv in baz)
+            {
+                Console.WriteLine($"{kv.Key}: {kv.Value}");
+            }
+
+            Console.WriteLine("Foo fields:");
+            var foo = new Foo { Bar = "World", Baz = 100 };
             foreach (var kv in foo)
             {
                 Console.WriteLine($"{kv.Key}: {kv.Value}");
             }
+            
+            Console.WriteLine($"By key: {foo["Bar"]}");
+            Console.WriteLine($"Contains key: {foo.ContainsKey("Bar")}");
         }
-    }
-
-    [PocoDictionary]
-    public partial class Foo
-    {
-        public string Bar { get; set; }
-    }
-
-    public partial class Baz
-    {
-        public int Foo { get; set; }
-        public string Bar { get; set; }
-        public DateTime Date { get; set; }
     }
 }

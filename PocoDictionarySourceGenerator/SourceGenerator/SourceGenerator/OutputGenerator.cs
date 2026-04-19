@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Foxy.PocoDictionary.SourceGenerator.Data;
@@ -10,8 +12,8 @@ namespace Foxy.PocoDictionary.SourceGenerator.SourceGenerator;
 
 internal class OutputGenerator(SuccessfulCollectedData collectedData) : IDisposable
 {
-    private readonly SuccessfulCollectedData _collectedData = collectedData;
     private readonly SourceBuilder _builder = SourceBuilderPool.Instance.Get();
+    private CandidateTypeInfo TypeInfo => collectedData.TypeInfo;
 
     public void Dispose()
     {
@@ -31,14 +33,13 @@ internal class OutputGenerator(SuccessfulCollectedData collectedData) : IDisposa
 
     private void GenerateNamespace()
     {
-        if (_collectedData.TypeInfo.InGlobalNamespace)
+        if (TypeInfo.InGlobalNamespace)
         {
             GenerateNamespaceMembers();
         }
         else
         {
-            var namespaceName = "Something";
-            _builder.AppendLine($"namespace {namespaceName}");
+            _builder.AppendLine($"namespace {TypeInfo.Namespace}");
             using (_builder.StartBlock())
             {
                 GenerateNamespaceMembers();
@@ -48,5 +49,169 @@ internal class OutputGenerator(SuccessfulCollectedData collectedData) : IDisposa
 
     private void GenerateNamespaceMembers()
     {
+        GeneratePartialClass(0);
+    }
+
+    private void GeneratePartialClass(
+        int level)
+    {
+        if (level < TypeInfo.TypeHierarchy.Count)
+        {
+            _builder.AppendLine($"partial class {TypeInfo.TypeHierarchy[level]}");
+            using (_builder.StartBlock())
+            {
+                GeneratePartialClass(level + 1);
+            }
+        }
+        else
+        {
+            _builder.AppendLine(
+                $"partial {TypeInfo.TypeKind} {TypeInfo.TypeName} : global::System.Collections.Generic.IReadOnlyDictionary<string, object?>");
+            using (_builder.StartBlock())
+            {
+                GenerateKeysField();
+                GenerateCount();
+                GenerateIndexer();
+                GenerateKeysProperty();
+                GenerateValuesProperty();
+                GenerateTryGetValue();
+                GenerateContainsKey();
+                GenerateGetEnumeratorOfT();
+                GenerateGetEnumerator();
+            }
+        }
+    }
+
+    private void GenerateKeysField()
+    {
+        _builder.AppendLine(
+            $"private static readonly string[] _keys = new string[] {{ {TypeInfo.Properties.Select(p => $"\"{p.Name}\"")} }};");
+        _builder.AppendLine();
+    }
+
+    private void GenerateCount()
+    {
+        _builder.AppendLine($"public int Count => {TypeInfo.Properties.Count};");
+        _builder.AppendLine();
+    }
+
+    private void GenerateIndexer()
+    {
+        _builder.AppendTextLine("public object? this[string key]");
+        using (_builder.StartBlock())
+        {
+            _builder.AppendTextLine("get");
+            using (_builder.StartBlock())
+            {
+                _builder.AppendTextLine("if (TryGetValue(key, out var value))");
+                using (_builder.StartBlock())
+                {
+                    _builder.AppendTextLine("return value;");
+                }
+
+                _builder.AppendLine();
+                _builder.AppendTextLine("throw new global::System.Collections.Generic.KeyNotFoundException($\"Key {key} not found\");");
+            }
+        }
+
+        _builder.AppendLine();
+    }
+
+    private void GenerateKeysProperty()
+    {
+        _builder.AppendTextLine("public global::System.Collections.Generic.IEnumerable<string> Keys => _keys;");
+        _builder.AppendLine();
+    }
+
+    private void GenerateValuesProperty()
+    {
+        _builder.AppendTextLine("public global::System.Collections.Generic.IEnumerable<object?> Values => new object?[] { " + string.Join(", ", TypeInfo.Properties.Select(p => p.Name)) +
+                                " };");
+        _builder.AppendLine();
+    }
+
+    private void GenerateTryGetValue()
+    {
+        _builder.AppendLine(
+            $"public bool TryGetValue(string key, out object? value)");
+        using (_builder.StartBlock())
+        {
+            _builder.AppendLine($"switch (key)");
+            using (_builder.StartBlock())
+            {
+                foreach (var propertyInfo in TypeInfo.Properties)
+                {
+                    _builder.AppendLine($"case \"{propertyInfo.Name}\":");
+                    using (_builder.StartBlock())
+                    {
+                        _builder.AppendLine($"value = {propertyInfo.Name};");
+                        _builder.AppendLine($"return true;");
+                    }
+                }
+
+                _builder.AppendLine($"default:");
+                using (_builder.StartBlock())
+                {
+                    _builder.AppendLine($"value = null;");
+                    _builder.AppendLine($"return false;");
+                }
+            }
+        }
+
+        _builder.AppendLine();
+    }
+
+    private void GenerateContainsKey()
+    {
+        _builder.AppendLine(
+            $"public bool ContainsKey(string key)");
+        using (_builder.StartBlock())
+        {
+            _builder.AppendLine($"switch (key)");
+            using (_builder.StartBlock())
+            {
+                foreach (var propertyInfo in TypeInfo.Properties)
+                {
+                    _builder.AppendLine($"case \"{propertyInfo.Name}\":");
+                    using (_builder.StartBlock())
+                    {
+                        _builder.AppendLine($"return true;");
+                    }
+                }
+
+                _builder.AppendLine($"default:");
+                using (_builder.StartBlock())
+                {
+                    _builder.AppendLine($"return false;");
+                }
+            }
+        }
+
+        _builder.AppendLine();
+    }
+
+    private void GenerateGetEnumeratorOfT()
+    {
+        _builder.AppendLine(
+            $"public global::System.Collections.Generic.IEnumerator<global::System.Collections.Generic.KeyValuePair<string, object?>> GetEnumerator()");
+        using (_builder.StartBlock())
+        {
+            foreach (var propertyInfo in TypeInfo.Properties)
+            {
+                _builder.AppendLine(
+                    $"yield return new global::System.Collections.Generic.KeyValuePair<string, object?>(\"{propertyInfo.Name}\", {propertyInfo.Name});");
+            }
+        }
+
+        _builder.AppendLine();
+    }
+
+    private void GenerateGetEnumerator()
+    {
+        _builder.AppendLine($"global::System.Collections.IEnumerator global::System.Collections.IEnumerable.GetEnumerator()");
+        using (_builder.StartBlock())
+        {
+            _builder.AppendLine($"return GetEnumerator();");
+        }
     }
 }

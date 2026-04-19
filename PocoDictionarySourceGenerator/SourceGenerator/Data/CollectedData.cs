@@ -1,6 +1,6 @@
 ﻿namespace Foxy.PocoDictionary.SourceGenerator.Data;
 
-internal abstract class CollectedData
+public abstract record CollectedData
 {
     public abstract bool HasErrors { get; }
 }

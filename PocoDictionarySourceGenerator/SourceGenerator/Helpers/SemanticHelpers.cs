@@ -100,6 +100,7 @@ internal static class SemanticHelpers
                 symbol = symbol.ContainingType;
                 count++;
             }
+
             return container;
         }
 
@@ -111,6 +112,7 @@ internal static class SemanticHelpers
                 symbol = symbol.ContainingType;
                 count++;
             }
+
             return count;
         }
     }
@@ -137,6 +139,7 @@ internal static class SemanticHelpers
                 {
                     return typeName;
                 }
+
                 return $"{typeName}?";
         }
     }
@@ -159,6 +162,7 @@ internal static class SemanticHelpers
         {
             return ConstraintType.NotNull;
         }
+
         return ConstraintType.None;
     }
 
@@ -166,5 +170,16 @@ internal static class SemanticHelpers
     {
         return isNullable ? "?" : "";
     }
-}
 
+    public static string GetTypeKind(INamedTypeSymbol typeSymbol)
+    {
+        return typeSymbol.TypeKind switch
+        {
+            TypeKind.Class when typeSymbol.IsRecord => "record",
+            TypeKind.Class when !typeSymbol.IsRecord => "class",
+            TypeKind.Struct when typeSymbol.IsRecord => "record struct",
+            TypeKind.Struct when !typeSymbol.IsRecord => "struct",
+            _ => throw new InvalidOperationException($"Unsupported type kind {typeSymbol.TypeKind}")
+        };
+    }
+}

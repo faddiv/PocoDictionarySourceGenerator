@@ -20,7 +20,7 @@ partial class PocoDictionaryIncrementalGenerator
         {
             using var generator = new OutputGenerator(data);
             context.AddSource(
-                SemanticHelpers.CreateFileName(data.TypeInfo.TypeName),
+                SemanticHelpers.CreateFileName(data.TypeInfo.FullName),
                 generator.Execute());
         }
         else

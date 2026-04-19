@@ -1,16 +1,6 @@
-﻿using System;
+﻿namespace Foxy.PocoDictionary.SourceGenerator.Data;
 
-namespace Foxy.PocoDictionary.SourceGenerator.Data;
-
-internal class SuccessfulCollectedData : CollectedData, IEquatable<SuccessfulCollectedData?>
+public record SuccessfulCollectedData(CandidateTypeInfo TypeInfo): CollectedData
 {
     public override bool HasErrors => false;
-
-    public required CandidateTypeInfo TypeInfo { get; init; }
-
-    public bool Equals(SuccessfulCollectedData? other)
-    {
-        return false;
-    }
 }
-
