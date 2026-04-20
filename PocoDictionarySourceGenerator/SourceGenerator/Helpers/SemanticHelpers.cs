@@ -93,7 +93,7 @@ internal static class SemanticHelpers
         static string[] CreateTypeHierarchyInternal(INamedTypeSymbol? symbol, int level)
         {
             var count = 1;
-            string[] container = new string[level];
+            var container = new string[level];
             while (symbol is not null)
             {
                 container[^count] = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);

@@ -40,7 +40,7 @@ partial class PocoDictionaryIncrementalGenerator
             new CandidateTypeInfo(
                 TypeName: typeSymbol.Name,
                 Namespace: containingNamespace,
-                [],
+                SemanticHelpers.GetTypeHierarchy(typeSymbol.ContainingType),
                 properties,
                 SemanticHelpers.GetTypeKind(typeSymbol)));
         

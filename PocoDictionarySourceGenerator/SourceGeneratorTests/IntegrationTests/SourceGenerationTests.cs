@@ -59,4 +59,12 @@ public class SourceGenerationTests(TestEnvironment testEnvironment)
         await VerifyCS.VerifyGeneratorAsync(code,
             testEnvironment.GetOutputs());
     }
+
+    [Fact]
+    public async Task Generate_PocoInInnerClass()
+    {
+        var code = testEnvironment.GetValidSource();
+        await VerifyCS.VerifyGeneratorAsync(code,
+            testEnvironment.GetOutputs());
+    }
 }
