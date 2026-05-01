@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using Foxy.PocoDictionary.SourceGenerator;
+﻿using Foxy.PocoDictionary.SourceGenerator;
 using Foxy.PocoDictionary.SourceGenerator.Data;
 using Xunit;
 using SourceGeneratorTests.TestInfrastructure;

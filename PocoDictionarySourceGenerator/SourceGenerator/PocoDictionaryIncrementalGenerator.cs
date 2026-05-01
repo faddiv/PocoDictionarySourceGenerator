@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 using System.Threading;
 using Foxy.PocoDictionary.SourceGenerator.Data;
 using Foxy.PocoDictionary.SourceGenerator.Helpers;

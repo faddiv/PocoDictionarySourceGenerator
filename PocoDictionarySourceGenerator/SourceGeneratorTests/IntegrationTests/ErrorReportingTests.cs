@@ -3,7 +3,6 @@ using Foxy.PocoDictionary.SourceGenerator;
 using Foxy.PocoDictionary.SourceGenerator.Data;
 using Xunit;
 using SourceGeneratorTests.TestInfrastructure;
-using Microsoft.CodeAnalysis;
 using SourceGeneratorTests.TestInfrastructure.Verifiers;
 
 namespace SourceGeneratorTests.IntegrationTests;
