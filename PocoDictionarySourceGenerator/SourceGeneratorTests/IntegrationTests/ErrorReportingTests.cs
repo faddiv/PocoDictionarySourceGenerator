@@ -12,14 +12,14 @@ using VerifyCS = CSharpSourceGeneratorVerifier<PocoDictionaryIncrementalGenerato
 public class ErrorReportingTests(TestEnvironment testEnvironment)
 {
     [Fact]
-    public async Task Reports_On___()
+    public async Task Reports_On_ClassIsNotPartial()
     {
         var code = testEnvironment.GetInvalidSource();
 
         var expected = VerifyCS
-            .Diagnostic(DiagnosticReports.InternalError)
+            .Diagnostic(DiagnosticReports.ClassMustBePartial)
             .WithLocation(0)
-            .WithArguments();
+            .WithArguments("Foo");
 
         await VerifyCS.VerifyGeneratorAsync(code, expected, testEnvironment.DefaultOutput);
     }

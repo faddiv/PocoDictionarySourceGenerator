@@ -33,12 +33,12 @@ public class TestEnvironment : IAsyncLifetime
     {
         await Compiler.LoadCSharpAssemblies(TestContext.Current.CancellationToken);
     }
-    
+
     public ValueTask DisposeAsync()
     {
         return ValueTask.CompletedTask;
     }
-    
+
     public CSharpFile GetValidSource([CallerMemberName] string caller = null!)
     {
         return _environment.GetFile(_validTests, caller, "_source.cs");
@@ -62,11 +62,6 @@ public class TestEnvironment : IAsyncLifetime
     public CSharpFile[] GetOutputs([CallerMemberName] string caller = null!)
     {
         return GetOutputsFor(_environment.GetBasePath(_validTests), caller);
-    }
-
-    public CSharpFile[] GetCachingOutputs([CallerMemberName] string caller = null!)
-    {
-        return GetOutputsFor(_environment.GetBasePath(_cachingTests), caller);
     }
 
     public CSharpFile[] GetOutputsFor(string baseDirectory, [CallerMemberName] string caller = null!)

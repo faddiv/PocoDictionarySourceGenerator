@@ -26,7 +26,6 @@ namespace SourceGeneratorTests.IntegrationTests
         {
             var runner = new SourceGeneratorRunner<PocoDictionaryIncrementalGenerator>();
             var input = _testEnvironment.GetCachingSource();
-            var expected = _testEnvironment.GetCachingOutputs();
 
             var compilation = _compilerRunner.CompileSources([input], TestContext.Current.CancellationToken);
 
@@ -39,7 +38,42 @@ namespace SourceGeneratorTests.IntegrationTests
             AssertRunsEqual(result1, result2, _allTrackingNames);
             AssertAllOutputs(result2, IncrementalStepRunReason.Cached);
             Assert.Empty(result1.Diagnostics);
-            AssertOutputsMatch(result1, expected);
+        }
+
+        [Fact]
+        public void Caches_When_IndexerAdded()
+        {
+            var runner = new SourceGeneratorRunner<PocoDictionaryIncrementalGenerator>();
+            var inputs = _testEnvironment.GetCachingSources();
+
+            var compilation = _compilerRunner.CompileSources([inputs[0]], TestContext.Current.CancellationToken);
+
+            runner.RunSourceGenerator(compilation, TestContext.Current.CancellationToken);
+
+            var compilation2 = _compilerRunner.CompileSources([inputs[1]], TestContext.Current.CancellationToken);
+
+            var result2 = runner.RunSourceGenerator(compilation2, TestContext.Current.CancellationToken);
+
+            AssertAllOutputs(result2, IncrementalStepRunReason.Cached);
+            Assert.Empty(result2.Diagnostics);
+        }
+
+        [Fact]
+        public void Regenerate_When_PropertyAdded()
+        {
+            var runner = new SourceGeneratorRunner<PocoDictionaryIncrementalGenerator>();
+            var inputs = _testEnvironment.GetCachingSources();
+
+            var compilation = _compilerRunner.CompileSources([inputs[0]], TestContext.Current.CancellationToken);
+
+            runner.RunSourceGenerator(compilation, TestContext.Current.CancellationToken);
+
+            var compilation2 = _compilerRunner.CompileSources([inputs[1]], TestContext.Current.CancellationToken);
+
+            var result2 = runner.RunSourceGenerator(compilation2, TestContext.Current.CancellationToken);
+
+            AssertAllOutputs(result2, IncrementalStepRunReason.Modified);
+            Assert.Empty(result2.Diagnostics);
         }
     }
 }

@@ -13,4 +13,12 @@ public class DiagnosticReports
         Category,
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
+
+    public static DiagnosticDescriptor ClassMustBePartial { get; } = new(
+        "PD0001",
+        "Class must be partial",
+        "Class '{0}' must be declared as partial to be used with PocoDictionary",
+        Category,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true);
 }

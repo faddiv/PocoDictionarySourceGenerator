@@ -3,7 +3,7 @@ using System;
 
 namespace Something;
 
-[{|#0:PocoDictionary|}]
-public partial class Foo
+[PocoDictionary]
+public class {|#0:Foo|}
 {
 }

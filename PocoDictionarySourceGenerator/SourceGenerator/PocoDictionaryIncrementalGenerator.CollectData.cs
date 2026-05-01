@@ -13,7 +13,7 @@ partial class PocoDictionaryIncrementalGenerator
         GeneratorAttributeSyntaxContext context,
         CancellationToken cancel)
     {
-        if (context.TargetNode is not TypeDeclarationSyntax ||
+        if (context.TargetNode is not TypeDeclarationSyntax targetNode ||
             context.TargetSymbol is not INamedTypeSymbol typeSymbol)
         {
             return null;
@@ -22,6 +22,17 @@ partial class PocoDictionaryIncrementalGenerator
         if (Validators.HasError(typeSymbol))
         {
             return null;
+        }
+
+        //Is partial class?
+        if (!Validators.IsPartial(typeSymbol, cancel))
+        {
+            return new FailedCollectedData([
+                DiagnosticInfo.Create(
+                    DiagnosticReports.ClassMustBePartial,
+                    targetNode.Identifier.GetLocation(),
+                    typeSymbol.Name)
+            ]);
         }
 
         var properties = typeSymbol.GetMembers()
@@ -41,7 +52,7 @@ partial class PocoDictionaryIncrementalGenerator
                 SemanticHelpers.GetTypeHierarchy(typeSymbol.ContainingType),
                 properties,
                 SemanticHelpers.GetTypeKind(typeSymbol)));
-        
+
         bool PropertyFilter(IPropertySymbol property)
         {
             return property is { IsStatic: false, IsIndexer: false } &&

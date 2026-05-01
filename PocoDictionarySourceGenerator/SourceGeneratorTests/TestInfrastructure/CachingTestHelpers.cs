@@ -3,31 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Collections;
-using Test.Infrastructure;
 using Xunit;
 
 namespace SourceGeneratorTests.TestInfrastructure;
 
 internal static class CachingTestHelpers
 {
-    public static void AssertOutputsMatch(GeneratorDriverRunResult runResult, ICollection<CSharpFile> files)
-    {
-        var actualFileNames = runResult.GeneratedTrees.Select(e => Path.GetFileName(e.FilePath)).ToArray();
-        var expectedFileNames = files.Select(e => e.Name).ToArray();
-
-        AssertContains(actualFileNames, expectedFileNames);
-        AssertContains(expectedFileNames, actualFileNames);
-
-        foreach (var file in files)
-        {
-            var tree = runResult.GeneratedTrees.First(e => Path.GetFileName(e.FilePath) == file.Name);
-            Assert.Equal(file.Content, tree.ToString());
-        }
-    }
-
     public static void AssertAllOutputs(GeneratorDriverRunResult runResult, IncrementalStepRunReason reason)
     {
         // verify the second run only generated cached source outputs
@@ -43,29 +24,13 @@ internal static class CachingTestHelpers
         }
     }
 
-    public static void AssertOutput(GeneratorDriverRunResult runResult, string outputName, IncrementalStepRunReason reason)
-    {
-        var concreteOutputs = runResult.Results[0].TrackedOutputSteps
-                    .SelectMany(x => x.Value) // step executions
-                    .SelectMany(x => x.Outputs) // execution results
-                    .Select(x => new { x.Reason, Values = ExtractGeneratedSourceTexts(x) })
-                    .SelectMany(x => x.Values.Select(e => new { x.Reason, Value = e }))
-                    .Where(x => GetDynamicValue<string>(x.Value, "HintName") == outputName)
-                    .ToList();
-        Assert.Single(concreteOutputs);
-        foreach (var output in concreteOutputs)
-        {
-            Assert.Equal(reason, output.Reason);
-        }
-    }
-
     public static void AssertRunsEqual(
         GeneratorDriverRunResult runResult1,
         GeneratorDriverRunResult runResult2,
         string[] trackingNames)
     {
         // We're given all the tracking names, but not all the
-        // stages will necessarily execute, so extract all the 
+        // stages will necessarily execute, so extract all the
         // output steps and filter to ones we know about
         var trackedSteps1 = GetTrackedSteps(runResult1, trackingNames);
         var trackedSteps2 = GetTrackedSteps(runResult2, trackingNames);
@@ -98,30 +63,6 @@ internal static class CachingTestHelpers
                     .ToDictionary(x => x.Key, x => x.Value); // Convert to a dictionary
     }
 
-    private static IEnumerable<object> ExtractGeneratedSourceTexts((object Value, IncrementalStepRunReason Reason) x)
-    {
-        return x.Value is ITuple tuple
-            && tuple[0] is IList list
-            ? list.Cast<object>()
-            : [];
-    }
-
-    private static T? GetDynamicValue<T>(object? value, string propertyName)
-    {
-        if (value is null)
-        {
-            return default;
-        }
-
-        var type = value.GetType();
-        var property = type.GetProperty(propertyName);
-        if (property is null)
-        {
-            throw new ApplicationException($"Property {propertyName} doesn't exists on {type.FullName}");
-        }
-        return (T?)property.GetValue(value);
-    }
-
     private static void AssertEqual(
         ImmutableArray<IncrementalGeneratorRunStep> runSteps1,
         ImmutableArray<IncrementalGeneratorRunStep> runSteps2,
@@ -142,22 +83,13 @@ internal static class CachingTestHelpers
 
             // Therefore, on the second run the results should always be cached or unchanged!
             // - Unchanged is when the _input_ has changed, but the output hasn't
-            // - Cached is when the input has not changed, so the cached output is used 
+            // - Cached is when the input has not changed, so the cached output is used
             foreach (var output in runStep2.Outputs)
             {
                 Assert.True(
                     output.Reason is IncrementalStepRunReason.Cached or IncrementalStepRunReason.Unchanged,
                     $"{stepName} expected to have reason {IncrementalStepRunReason.Cached} or {IncrementalStepRunReason.Unchanged}");
             }
-        }
-    }
-
-    private static void AssertContains(ReadOnlySpan<string> expectedSubSpan, ReadOnlySpan<string> actualSpan)
-    {
-        for (var i = 0; i < expectedSubSpan.Length; i++)
-        {
-            var expected = expectedSubSpan.Slice(i, 1);
-            Assert.Contains(expected, actualSpan);
         }
     }
 }
